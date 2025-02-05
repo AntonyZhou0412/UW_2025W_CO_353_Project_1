@@ -1,13 +1,13 @@
 import sys
 import heapq
 
-# 读取输入
+# Read All Input
 data = sys.stdin.read().split()
 
-# 第一行输入
+# Read First Line
 n, m, r = map(int, data[:3])
 
-# 读取边的信息
+# Read Edges
 edges = []
 index = 3
 for _ in range(m):
@@ -38,15 +38,15 @@ def dijkstra(n, edges, root):
     
     return dist
 
-# 计算最短距离
+# Shortest Distance from root
 distances = dijkstra(n, edges, r)
 
-# 计算边的closeness
+# Calculate closeness
 edge_closeness = []
 for u, v, w in edges:
     d_e = min(distances[u], distances[v])
     edge_closeness.append((d_e,u,v,w))
 
-# 输出结果
+# Test Output
 print("Distances from root:", distances)
 print("Edge closeness:", edge_closeness)
