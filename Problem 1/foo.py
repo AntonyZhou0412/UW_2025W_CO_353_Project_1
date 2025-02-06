@@ -1,3 +1,5 @@
+# CO 353 Project 1.1
+# Python version: 3.13.1
 import sys
 import heapq
 
