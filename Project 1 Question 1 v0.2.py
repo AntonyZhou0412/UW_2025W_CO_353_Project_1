@@ -1,52 +1,89 @@
 import sys
 import heapq
 
-# Read All Input
-data = sys.stdin.read().split()
+def main():
+    data = sys.stdin.read().split()
+    ptr = 0
+    n = int(data[ptr]); ptr += 1
+    m = int(data[ptr]); ptr += 1
+    r = int(data[ptr]); ptr += 1
 
-# Read First Line
-n, m, r = map(int, data[:3])
+    edges = []
+    for _ in range(m):
+        u = int(data[ptr]); ptr += 1
+        v = int(data[ptr]); ptr += 1
+        w = int(data[ptr]); ptr += 1
+        edges.append((u, v, w))
 
-# Read Edges
-edges = []
-index = 3
-for _ in range(m):
-    u, v, w = map(int, data[index:index+3])
-    edges.append((u,v,w))
-    index += 3
+    # Dijkstra's algorithm to compute shortest paths from root r
+    def dijkstra(n, edges, root):
+        INF = float('inf')
+        adj = [[] for _ in range(n)]
+        for u, v, w in edges:
+            adj[u].append((v, w))
+            adj[v].append((u, w))
 
-def dijkstra(n, edges, root):
-    INF = float('inf')
-    adj = [[] for _ in range(n)]
+        dist = [INF] * n
+        dist[root] = 0
+        heap = [(0, root)]
+
+        while heap:
+            d, u = heapq.heappop(heap)
+            if d > dist[u]:
+                continue
+            for v, w in adj[u]:
+                if dist[v] > d + w:
+                    dist[v] = d + w
+                    heapq.heappush(heap, (dist[v], v))
+        return dist
+
+    distances = dijkstra(n, edges, r)
+
+    # Calculate edge closeness (d_e, u, v)
+    edge_closeness = []
     for u, v, w in edges:
-        adj[u].append((v,w))
-        adj[v].append((u,w))
+        de = min(distances[u], distances[v])
+        edge_closeness.append((de, u, v))
 
-    dist = [INF] * n
-    dist[root] = 0
-    pq = [(0,root)]
+    # Kruskal's algorithm for minimum and maximum spanning tree
+    def kruskal(n, edges, max_tree):
+        # Sort edges based on max_tree flag
+        sorted_edges = sorted(edges, key=lambda x: x[0], reverse=max_tree)
+        parent = list(range(n))
+        rank = [1] * n
 
-    while pq:
-        d, u = heapq.heappop(pq)
-        if d > dist[u]:
-            continue
+        def find(u):
+            if parent[u] != u:
+                parent[u] = find(parent[u])
+            return parent[u]
 
-        for v,w in adj[u]:
-            if dist[u] + w < dist[v]:
-                dist[v] = dist[u] + w
-                heapq.heappush(pq,(dist[v],v))
-    
-    return dist
+        def union(u, v):
+            u_root = find(u)
+            v_root = find(v)
+            if u_root == v_root:
+                return False
+            if rank[u_root] < rank[v_root]:
+                parent[u_root] = v_root
+            else:
+                parent[v_root] = u_root
+                if rank[u_root] == rank[v_root]:
+                    rank[u_root] += 1
+            return True
 
-# Shortest Distance from root
-distances = dijkstra(n, edges, r)
+        total = 0
+        count = 0
+        for de, u, v in sorted_edges:
+            if union(u, v):
+                total += de
+                count += 1
+                if count == n - 1:
+                    break
+        return total
 
-# Calculate closeness
-edge_closeness = []
-for u, v, w in edges:
-    d_e = min(distances[u], distances[v])
-    edge_closeness.append((d_e,u,v,w))
+    min_closeness = kruskal(n, edge_closeness, False)
+    max_closeness = kruskal(n, edge_closeness, True)
 
-# Test Output
-print("Distances from root:", distances)
-print("Edge closeness:", edge_closeness)
+    print(min_closeness, max_closeness)
+
+if __name__ == "__main__":
+    main()
